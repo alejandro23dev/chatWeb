@@ -36,21 +36,23 @@
 								<!--end:Search-->
 								<!--begin:Users-->
 								<div class="mt-7 scroll scroll-pull ps ps--active-y" style="height: 533px; overflow: hidden;">
-									<div class="d-flex align-items-center justify-content-between mb-5">
-										<div class="d-flex align-items-center">
-											<div class="symbol symbol-circle symbol-50 mr-3">
-												<img alt="Pic" src="assets/media/users/300_11.jpg">
+									<?php foreach ($contacts as $c) { ?>
+										<div class="d-flex align-items-center justify-content-between mb-5 cursor-pointer hover-opacity-50">
+											<div class="d-flex align-items-center">
+												<div class="symbol symbol-circle symbol-50 mr-3">
+													<img alt="Pic" src="assets/media/users/300_11.jpg">
+												</div>
+												<div class="d-flex flex-column">
+													<div class="text-dark-75 font-weight-bold font-size-lg"><?php echo $c->user; ?></div>
+													<span id="status-on-off-<?php echo $c->id; ?>" class="text-muted font-weight-bold font-size-sm"></span>
+												</div>
 											</div>
-											<div class="d-flex flex-column">
-												<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-lg">Charlie Stone</a>
-												<span class="text-muted font-weight-bold font-size-sm">Art Director</span>
+											<div class="d-flex flex-column align-items-end">
+												<span class="text-muted font-weight-bold font-size-sm">7 hrs</span>
+												<span class="label label-sm label-success">4</span>
 											</div>
 										</div>
-										<div class="d-flex flex-column align-items-end">
-											<span class="text-muted font-weight-bold font-size-sm">7 hrs</span>
-											<span class="label label-sm label-success">4</span>
-										</div>
-									</div>
+									<?php } ?>
 								</div>
 								<!--end:Users-->
 							</div>
@@ -161,7 +163,7 @@
 								</div>
 								<div class="text-center flex-grow-1">
 									<div class="text-dark-75 font-weight-bold font-size-h5">Matt Pears</div>
-									<div>
+									<div id="isTyping">
 										<span class="label label-sm label-dot label-success"></span>
 										<span class="font-weight-bold text-muted font-size-sm">Active</span>
 									</div>
@@ -261,40 +263,12 @@
 								<!--begin::Scroll-->
 								<div class="scroll scroll-pull ps ps--active-y" data-mobile-height="350" style="height: 386px; overflow: hidden;">
 									<!--begin::Messages-->
-									<div class="messages">
-										<!--begin::Message In-->
-										<div class="d-flex flex-column mb-5 align-items-start">
-											<div class="d-flex align-items-center">
-												<div class="symbol symbol-circle symbol-40 mr-3">
-													<img alt="Pic" src="assets/media/users/300_12.jpg">
-												</div>
-												<div>
-													<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Matt Pears</a>
-													<span class="text-muted font-size-sm">2 Hours</span>
-												</div>
-											</div>
-											<div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">How likely are you to recommend our company to your friends and family?</div>
-										</div>
-										<!--end::Message In-->
-										<!--begin::Message Out-->
-										<div class="d-flex flex-column mb-5 align-items-end">
-											<div class="d-flex align-items-center">
-												<div>
-													<span class="text-muted font-size-sm">3 minutes</span>
-													<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>
-												</div>
-												<div class="symbol symbol-circle symbol-40 ml-3">
-													<img alt="Pic" src="assets/media/users/300_21.jpg">
-												</div>
-											</div>
-											<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">Hey there, we’re just writing to let you know that you’ve been subscribed to a repository on GitHub.</div>
-										</div>
+									<div id="messages" class="messages">
 									</div>
 								</div>
 							</div>
 							<div class="card-footer align-items-center">
-								<!--begin::Compose-->
-								<textarea class="form-control border-0 p-0" rows="2" placeholder="Type a message"></textarea>
+								<textarea id="txt-message" class="form-control border-0 p-0" rows="2" placeholder="Type a message"></textarea>
 								<div class="d-flex align-items-center justify-content-between mt-5">
 									<div class="mr-3">
 										<a href="#" class="btn btn-clean btn-icon btn-md mr-1">
@@ -305,21 +279,113 @@
 										</a>
 									</div>
 									<div>
-										<button type="button" class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6">Send</button>
+										<button type="submit" id="btn-submit" class="btn btn-primary btn-md text-uppercase font-weight-bold chat-send py-2 px-6">Send</button>
 									</div>
 								</div>
-								<!--begin::Compose-->
 							</div>
-							<!--end::Footer-->
 						</div>
-						<!--end::Card-->
 					</div>
-					<!--end::Content-->
 				</div>
-				<!--end::Chat-->
 			</div>
-			<!--end::Container-->
 		</div>
-		<!--end::Entry-->
 	</div>
 </body>
+
+<script type="module">
+	import {
+		io
+	} from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+
+	const message = document.getElementById("txt-message");
+	const messages = document.getElementById("messages");
+	const submit = document.getElementById("btn-submit");
+
+	let username = "<?php echo $user['user']; ?>";
+	let sentUserID = "<?php echo $user['userID']; ?>";
+
+	const socket = io('http://localhost:3000', {
+		transports: ['websocket'],
+		query: {
+			userID: sentUserID
+		}
+	});
+
+	socket.on("message", (msg, username) => {
+		console.log(username);
+		let msj;
+		if (username == "<?php echo $user['user']; ?>") {
+			msj = `
+			<div class="d-flex flex-column mb-5 align-items-end">
+				<div class="d-flex align-items-center">
+					<div>
+						<span class="text-muted font-size-sm">3 minutes</span>
+						<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">Tú</a>
+					</div>
+					<div class="symbol symbol-circle symbol-40 ml-3">
+						<img alt="Pic" src="assets/media/users/300_21.jpg">
+					</div>
+				</div>
+				<div class="mt-2 rounded p-5 bg-light-primary text-dark-50 font-weight-bold font-size-lg text-right max-w-400px">${msg}</div>
+			</div>
+				
+		    `;
+		} else {
+			msj = `
+		  <div class="d-flex flex-column mb-5 align-items-start">
+			  <div class="d-flex align-items-center">
+					<div class="symbol symbol-circle symbol-40 mr-3">
+						<img alt="Pic" src="assets/media/users/300_12.jpg">
+					</div>
+					<div>
+						<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">${username}</a>
+						<span class="text-muted font-size-sm">2 Hours</span>
+					</div>
+				</div>
+				<div class="mt-2 rounded p-5 bg-light-success text-dark-50 font-weight-bold font-size-lg text-left max-w-400px">${msg}</div>
+			</div>
+		    `;
+		}
+		messages.insertAdjacentHTML("beforeend", msj);
+		socket.auth.serverOffset = serverOffset;
+
+		messages.scrollTop = messages.scrollHeight;
+	});
+
+	socket.on("is-typing", (msg, username) => {
+		document.getElementById("isTyping").innerHTML = msg;
+	});
+
+	socket.on("stop-typing", () => {
+		document.getElementById("isTyping").innerHTML = "";
+	});
+
+	socket.on('user-connected', (userID) => {
+		document.getElementById("status-on-off-" + userID).innerHTML = '<div><span class="label label-sm label-dot label-success"></span><span class="font-weight-bold text-muted font-size-sm"> En Línea</span></div>';
+		console.log(`User ${userID} has connected`);
+	});
+
+
+	socket.on('user-disconnected', (userID) => {
+		document.getElementById("status-on-off-" + userID).innerHTML = '<div><span class="label label-sm label-dot label-danger"></span><span class="font-weight-bold text-muted font-size-sm"> Fuera de línea</span></div>';
+		console.log(`User ${userID} has disconnected`);
+	});
+
+	submit.addEventListener("click", () => {
+		if (message.value) {
+			socket.emit("message", message.value, sentUserID, 2, username, (respuesta) => {
+				console.log(`Respuesta del servidor: ${respuesta}`);
+			});
+			$("#txt-message").val("");
+		}
+	});
+
+	message.addEventListener("keydown", () => {
+		socket.emit("typing", username);
+	});
+
+	message.addEventListener("keyup", () => {
+		setTimeout(() => {
+			socket.emit("stop-typing");
+		}, 3000);
+	});
+</script>

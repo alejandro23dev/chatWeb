@@ -37,6 +37,6 @@ class Chats extends BaseController
 		$data['user'] = $this->objSession->get('user');
 		$data['contacts'] = $this->objChatsModel->getContacts($data['user']['userID']);
 
-		return view('chats/chatsList');
+		return view('chats/chatsList', $data);
 	}
 }

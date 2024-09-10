@@ -32,20 +32,12 @@ class AuthenticationModel extends Model
 		}
 
 		if (password_verify($password, $data[0]->password)) {
-			if ($data[0]->status == 1) {
-				$result = array();
-				$result['error'] = 0;
-				$result['msg'] = 'SUCCESS';
-				$result['data'] = $data[0];
+			$result = array();
+			$result['error'] = 0;
+			$result['msg'] = 'SUCCESS';
+			$result['data'] = $data[0];
 
-				return $result;
-			} else {
-				$result = array();
-				$result['error'] = 1;
-				$result['msg'] = 'USER_INACTIVE';
-
-				return $result;
-			}
+			return $result;
 		} else {
 			$result = array();
 			$result['error'] = 1;

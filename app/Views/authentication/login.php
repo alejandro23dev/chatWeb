@@ -22,12 +22,15 @@
 						<div class="mb-5">
 							<input id="txt-email" class="form-control h-auto text-white bg-white-o-5 rounded-pill border-0 py-4 px-8 required" type="email" placeholder="Correo Electrónico" autocomplete="off">
 						</div>
+
 						<div class="mb-5">
 							<input id="txt-password" class="form-control h-auto text-white bg-white-o-5 rounded-pill border-0 py-4 px-8 required" type="password" placeholder="Contraseña">
 						</div>
+
 						<div class="mb-5 align-items-end px-8 opacity-60">
 							<a id="" class="text-white font-weight-bold">Olvidé la contraseña ?</a>
 						</div>
+
 						<div class="form-group text-center mt-10">
 							<button id="btn-submit" class="btn btn-pill btn-primary opacity-90 px-15 py-3">Iniciar Sesión</button>
 						</div>
@@ -47,6 +50,14 @@
 <script>
 	$(document).ready(function() {
 
+		if (Cookies.get('email') && Cookies.get('password')) {
+			$('#txt-email').val(Cookies.get('email'));
+			$('#txt-password').val(Cookies.get('password'));
+			setTimeout(() => {
+				$('#btn-submit').trigger('click');
+			}, 200);
+		}
+
 		$('#btn-submit').on('click', function() {
 			let email = $('#txt-email').val();
 			let password = $('#txt-password').val();
@@ -63,6 +74,10 @@
 					dataType: "json",
 					success: function(res) {
 						if (res.error == 0) {
+							// Set cookie with email and password
+							Cookies.set('email', email);
+							Cookies.set('password', password);
+
 							window.location.href = "<?php echo base_url('Chats'); ?>";
 						} else if (res.error == 1) {
 							if (res.msg == 'EMAIL_NOT_FOUND' || res.msg == 'INVALID_PASSWORD') {
@@ -70,8 +85,6 @@
 								$('.required').each(function() {
 									$(this).addClass('is-invalid');
 								});
-							} else if (res.msg == 'USER_INACTIVE') {
-								showWarningAlert('Su cuenta está desactivada');
 							} else
 								showGlobalErrorAlert();
 						}
@@ -101,5 +114,7 @@
 		$('.required').on('focus', function() {
 			$(this).removeClass('is-invalid');
 		});
+
+		$('#txt-email').focus();
 	});
 </script>

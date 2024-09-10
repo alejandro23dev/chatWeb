@@ -79,6 +79,7 @@
 	<script src="<?php echo base_url('public/assets/plugins/custom/prismjs/prismjs.bundle.js'); ?>"></script>
 	<script src="<?php echo base_url('public/assets/js/scripts.bundle.js'); ?>"></script>
 	<script src="<?php echo base_url('public/assets/js/pages/custom/login/login-4.js'); ?>"></script>
+	<script src="<?php echo base_url('public/assets/js/js-cookie/dist/js.cookie.min.js')?>"></script>
 
 	<script>
 		function showWarningAlert(msg) {

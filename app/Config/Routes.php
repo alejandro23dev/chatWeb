@@ -12,3 +12,5 @@ $routes->post('Home/loginProccess', 'Home::loginProccess');
 
 // Chats
 $routes->get('Chats', 'Chats::chatsList');
+
+$routes->get('socket.io', 'SocketIO::index');

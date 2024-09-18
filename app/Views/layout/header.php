@@ -79,7 +79,7 @@
 	<script src="<?php echo base_url('public/assets/plugins/custom/prismjs/prismjs.bundle.js'); ?>"></script>
 	<script src="<?php echo base_url('public/assets/js/scripts.bundle.js'); ?>"></script>
 	<script src="<?php echo base_url('public/assets/js/pages/custom/login/login-4.js'); ?>"></script>
-	<script src="<?php echo base_url('public/assets/js/js-cookie/dist/js.cookie.min.js')?>"></script>
+	<script src="<?php echo base_url('public/assets/js/js-cookie/dist/js.cookie.min.js') ?>"></script>
 
 	<script>
 		function showWarningAlert(msg) {
@@ -98,4 +98,62 @@
 			Swal.fire("Alerta!", "Ha ocurrido un error", "error");
 		}
 	</script>
+
+	<style>
+		/* Estilos para la notificación */
+		.notification {
+			position: fixed;
+			top: 50px;
+			right: 10px;
+			transform: translate(-50px, -10px);
+			z-index: 1000;
+			background-color: #fff;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+			padding: 10px;
+			width: 300px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.notification-content {
+			display: flex;
+			align-items: center;
+		}
+
+		.profile-picture {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			margin-right: 10px;
+		}
+
+		.username {
+			font-weight: bold;
+			margin-bottom: 5px;
+		}
+
+		.message {
+			font-size: 14px;
+			color: #333;
+		}
+
+		/* Animación para mostrar la notificación */
+		.notification {
+			animation: showNotification 0.5s forwards;
+		}
+
+		@keyframes showNotification {
+			0% {
+				transform: translate(-50%, -50%) scale(0.5);
+				opacity: 0;
+			}
+
+			100% {
+				transform: translate(-50%, -50%) scale(1);
+				opacity: 1;
+			}
+		}
+	</style>
 </head>

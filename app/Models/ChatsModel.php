@@ -21,4 +21,12 @@ class ChatsModel extends Model
 
 		return $query->get()->getResult();
 	}
+
+	public function getContact($contactID)
+	{
+		$query = $this->db->table('user')
+			->where('id', $contactID);
+
+		return $query->get()->getResult();
+	}
 }

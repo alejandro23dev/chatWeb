@@ -39,4 +39,20 @@ class Chats extends BaseController
 
 		return view('chats/chatsList', $data);
 	}
+
+	public function chatRoom()
+	{
+		# Verify Session
+		if (empty($this->objSession->get('user')) || empty($this->objSession->get('user')['userID'])) {
+			return view('logout');
+		}
+
+		$contactID = $this->objRequest->getPostGet('contactID');
+
+		$data = array();
+		$data['user'] = $this->objSession->get('user');
+		$data['contact'] = $this->objChatsModel->getContact($contactID);
+
+		return view('chats/chatRoom', $data);
+	}
 }

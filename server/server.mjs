@@ -32,61 +32,72 @@ app.use(cors({
 	credentials: true
   }));
 
+  let userConnecteds= [];
+  let userDisconnecteds= [];
+
 io.on("connection", async (socket) => {
 	
 	const userID = socket.handshake.query.userID;
 
-	db.query(`UPDATE user SET status = 1 WHERE id = ?`, [userID], (err, results) => {
-  	  if (err) {
-  		console.error(err);
-  	  } else {
-  		console.log(`User ${userID} is now online`);
-  	  }
-  	});
+	if (!userConnecteds.includes(userID)) {
+		const index = userDisconnecteds.indexOf(userID);
+		if (index !== -1)
+		  userDisconnecteds.splice(index, 1);
 
-	  io.emit('user-connected', userID);
+		userConnecteds.push(userID);
+		io.emit('user-connecteds', userConnecteds);
+	  }
   
 	socket.on('disconnect', () => {
-    db.query(`UPDATE user SET status = 0 WHERE id = ?`, [userID], (err, results) => {
-  		if (err) {
-  		  console.error(err);
-  		} else {
-  		  console.log(`User ${userID} is now offline`);
-  		}
-  	  });
-  	  console.log('Desconectado del servidor');
-		io.emit('user-disconnected', userID);
+		if (userConnecteds.includes(userID)) {
+			const index = userConnecteds.indexOf(userID);
+			userConnecteds.splice(index, 1);
+
+			userDisconnecteds.push(userID);
+			io.emit('user-disconnecteds', userDisconnecteds);
+		  }
   	});
   
-  socket.on('message', (msg, sent_userID, received_userID , sentUserName) => {
-	db.query(`INSERT INTO messages (message, sent_userID, received_userID ) VALUES (?, ?, ?)`, 
-		[msg, sent_userID, received_userID], 
-		(err, results) => {
-		  if (err) {
-			console.error(err);
-		  } else {
-			io.emit('message', msg, sentUserName);
-			  }
-			}
-		  );
-	io.emit('message', msg)
-  });
+  	socket.on('message', (msg, sent_userID, received_userID , sentDate) => {
+		io.emit('message', msg, sent_userID, sentDate, 0);
+		db.query(`INSERT INTO messages (message, sent_userID, received_userID, date ) VALUES (?, ?, ?, ?)`, 
+			[msg, sent_userID, received_userID, sentDate]);
+  	});
 
-  socket.on('typing', (username) => {	
-	io.emit('is-typing', `${username} está escribiendo...`);
+  
+	socket.on('getMessages', async (sentUserID, contactUserID) => {
+
+		try {
+		  const [rows] = await db.execute(`SELECT * FROM messages WHERE (sent_userID = ? AND received_userID = ?) OR (sent_userID = ? AND received_userID = ?)`, [sentUserID, contactUserID, contactUserID, sentUserID]); 
+		 
+		  rows.forEach(row => {
+			socket.emit('message', row.message, row.sent_userID, row.date, row.deleted);
+		  });
+			
+		  console.log(rows);
+		} catch (error) {
+
+		  console.error(error);
+		}
+  
+  	});
+
+	socket.on('typing', (sentUserID, contactUserID) => {
+	  io.emit('is-typing', `está escribiendo...`, sentUserID, contactUserID);
+	});
+
+	socket.on('stop-typing', (sentUserID) => {
+	  io.emit('stop-typing', '', sentUserID);
+	});
 });
-	
-  socket.on('stop-typing', () => {
-	io.emit('stop-typing', '');
- });
-});
 
-app.use(logger('dev'))
+	app.use(logger('dev'))
 
-app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, '../app/Views/chats/chatsList.html'));
-  });
+	app.get('/', (req, res) => {
+		res.sendFile(path.join(__dirname, '../app/Views/chats/chatsList.html'));
+	  });
 
-server.listen(port, ()=>{
-	console.log(`Servidor puerto ${port}`)
-})	
+	server.listen(port, ()=>{
+		console.log(`Servidor puerto ${port}`)
+	})	
+

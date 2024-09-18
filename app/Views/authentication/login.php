@@ -50,13 +50,13 @@
 <script>
 	$(document).ready(function() {
 
-		if (Cookies.get('email') && Cookies.get('password')) {
-			$('#txt-email').val(Cookies.get('email'));
-			$('#txt-password').val(Cookies.get('password'));
-			setTimeout(() => {
-				$('#btn-submit').trigger('click');
-			}, 200);
-		}
+		// if (Cookies.get('email') && Cookies.get('password')) {
+		// 	$('#txt-email').val(Cookies.get('email'));
+		// 	$('#txt-password').val(Cookies.get('password'));
+		// 	setTimeout(() => {
+		// 		$('#btn-submit').trigger('click');
+		// 	}, 200);
+		// }
 
 		$('#btn-submit').on('click', function() {
 			let email = $('#txt-email').val();
